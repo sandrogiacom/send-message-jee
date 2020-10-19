@@ -15,6 +15,8 @@ import com.fluig.broker.exception.BrokerException;
 import com.identity.broker.message.dto.AdGroupIdentityCreateConfirmationDTO;
 import com.identity.broker.message.dto.SyncEventDTO;
 import com.identity.broker.message.enums.AdGroupStatus;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.MessageProperties;
 
 public class SendGroupConfirmationMessage {
 
@@ -53,14 +55,19 @@ public class SendGroupConfirmationMessage {
         );
 
         BrokerResponse response = topicController.sendMessage(BrokerRequestBuilder.of()
-                .header(BrokerRequestHeaderBuilder.of()
-                        .type(BrokerConstants.IDM_AD_SYNC_IDENTITY_TOPIC)
-                        .build())
-                .body(sync)
-                .build());
+                        .header(BrokerRequestHeaderBuilder.of()
+                                .type(BrokerConstants.IDM_AD_SYNC_IDENTITY_TOPIC)
+                                .build())
+                        .body(sync)
+                        .build(),
+                getProperties());
 
         System.out.println(response);
 
+    }
+
+    private AMQP.BasicProperties getProperties() {
+        return MessageProperties.MINIMAL_PERSISTENT_BASIC.builder().contentType("application/json").build();
     }
 
     private AdGroupIdentityCreateConfirmationDTO buildGroupConformation(AdGroupStatus status) {
